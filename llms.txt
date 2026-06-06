@@ -1,0 +1,85 @@
+# quickcrop
+
+> Tiny, dependency-free image-crop modal for upload flows. One async function: the user picks a region, you get a Blob sized for upload. Uses an existing modal system (themodal from hyperclayjs, or any custom adapter) or brings its own.
+
+quickcrop ships as a single ES module plus an optional stylesheet. The script injects its own styles when the stylesheet is not linked.
+
+## Install
+
+```html
+<script type="module">
+  import quickcrop from 'https://cdn.jsdelivr.net/npm/quickcrop@1/quickcrop.js';
+</script>
+```
+
+With the CSS file (themeable):
+
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quickcrop@1/quickcrop.css">
+```
+
+Pin a version with `quickcrop@1.0.0` in either URL. Also on unpkg: `https://unpkg.com/quickcrop@1/quickcrop.js`. Via npm: `npm install quickcrop`, then `import quickcrop from 'quickcrop'`.
+
+## Quick start
+
+```js
+const result = await quickcrop(file, { aspect: 1, maxWidth: 512 });
+if (result) {
+  // result.blob (Blob), result.dataURL (string), result.width, result.height
+}
+```
+
+`file` is a File or Blob (e.g. from `<input type="file">`). Resolves `null` on cancel (Escape, backdrop, or themodal's close button when themodal hosts). Rejects on a non-Blob argument, an undecodable image, or a second call while open.
+
+## Options
+
+```js
+quickcrop(file, {
+  aspect: null,       // width/height lock; null = free crop; 1 = square, 16/9, ...
+  type: undefined,    // output mime; defaults to file.type for jpeg/png/webp, else 'image/png'
+  quality: 0.92,      // encoder quality for jpeg/webp; ignored for png
+  maxWidth: null,     // cap output width in px, downscales proportionally
+  maxHeight: null,    // cap output height in px; with maxWidth, stricter wins
+  minSize: 40,        // minimum crop box edge in display px
+  labels: { confirm: 'Crop' },
+  modal: 'auto',      // 'auto' | 'builtin' | themodal instance | custom adapter
+});
+```
+
+## Modal systems
+
+- `'auto'`: uses `window.themodal` (hyperclayjs) when present, else the built-in modal.
+- `'builtin'`: always the built-in modal.
+- A themodal instance: `quickcrop(file, { modal: themodal })`.
+- A custom adapter normalizes any modal system:
+
+```js
+{
+  open({ content, confirmLabel, onConfirm, onCancel }) {
+    // content: live HTMLElement (the crop stage); mount it in your modal.
+    // Dismissal affordances (Esc, backdrop, close button) are yours.
+    // Call onConfirm()/onCancel() only from user interaction.
+    return { close() { /* remove your modal */ } };
+  },
+  fit() { return { width, height }; } // optional: room available for the image
+}
+```
+
+## Theming
+
+CSS variables on `:root` (defaults are the warm "pixel quiet" palette): `--qc-surface` (#f7f2ea), `--qc-surface-hover` (#efe7d8), `--qc-border` (#cdbfa6), `--qc-text` (#2b241b), `--qc-text-hover` (#463c2e), `--qc-on-dark` (#efe7d8), `--qc-overlay` (rgba(43,36,27,.6)), `--qc-dim` (rgba(0,0,0,.55)), `--qc-radius` (8px), `--qc-crop-line` (#fff), `--qc-font` (ui-sans-serif, system-ui, sans-serif). When themodal hosts, the modal chrome is themodal's own; only the crop stage uses these variables.
+
+## Interaction
+
+Drag the box to move, drag a corner handle to resize (aspect-locked when `aspect` is set), rule-of-thirds grid, Escape/backdrop to dismiss, Enter to confirm. Pointer events, so mouse and touch both work. EXIF orientation is handled by the browser (`image-orientation: from-image`).
+
+## Browser support
+
+Modern browsers (ES modules, pointer events, canvas.toBlob), mouse and touch. Output area is capped at ~16.7M pixels (iOS Safari canvas limit), larger crops downscale proportionally. The realized output format is `result.blob.type` (engines without a webp encoder fall back to png). HEIC/HEIF input rejects with 'could not decode image' (browsers cannot decode it in <img>; iOS file inputs usually transcode to jpeg on selection).
+
+## Links
+
+- Demo: https://quickcrop.panphora.com
+- Repo: https://github.com/panphora/quickcrop
+- npm: https://www.npmjs.com/package/quickcrop
+- CDN: https://cdn.jsdelivr.net/npm/quickcrop@1/quickcrop.js

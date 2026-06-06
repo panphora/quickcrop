@@ -1,0 +1,43 @@
+{
+  "name": "quickcrop",
+  "version": "1.0.0",
+  "description": "Image-crop modal for upload flows. One function, no dependencies, returns a Blob. Uses your modal system or brings its own.",
+  "type": "module",
+  "main": "quickcrop.js",
+  "style": "quickcrop.css",
+  "exports": {
+    ".": "./quickcrop.js",
+    "./quickcrop.css": "./quickcrop.css"
+  },
+  "files": [
+    "quickcrop.js",
+    "quickcrop.css"
+  ],
+  "scripts": {
+    "dev": "http-server -p 7209 -c-1",
+    "build": "node build.js",
+    "prepublishOnly": "node build.js",
+    "test": "playwright test",
+    "copy-to-hyperclayjs": "node copy-to-hyperclayjs.js"
+  },
+  "keywords": [
+    "crop",
+    "cropper",
+    "image",
+    "upload",
+    "modal",
+    "vanilla",
+    "no-dependencies",
+    "lightweight"
+  ],
+  "author": "David Miranda",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/panphora/quickcrop.git"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "http-server": "^14.1.1"
+  }
+}

@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>quickcrop — crop an image before upload</title>
+<meta name="description" content="Tiny, dependency-free image-crop modal for upload flows. One function, returns a Blob.">
+<link rel="stylesheet" href="quickcrop.css">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 2rem auto;
+    max-width: 720px;
+    padding: 0 1.25rem;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+    background: #efe7d8;
+    color: #2b241b;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  header { margin-bottom: 1.5rem; }
+  h1.page-title { margin: 0 0 .25rem; font-size: 1.6rem; }
+  .tagline { margin: 0 0 1.25rem; color: #6e685d; }
+  .bio { margin: 0; max-width: 56ch; }
+  .bio a { color: #2b241b; }
+
+  section.card {
+    background: #f7f2ea;
+    border: 1px solid #d8c8af;
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+  }
+  section.card h2 {
+    margin: 0 0 .5rem;
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #8c7b62;
+  }
+  .hint { color: #8c7b62; font-size: .85rem; }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .75rem 1.25rem;
+    align-items: center;
+  }
+  label { color: #6e685d; display: inline-flex; align-items: center; gap: .5rem; font-size: .9rem; }
+  select, input[type=number], button.btn, input[type=file]::file-selector-button {
+    font: inherit;
+    font-size: .85rem;
+    padding: .3rem .75rem;
+    border: 1px solid #cdbfa6;
+    border-radius: 6px;
+    background: #f7f2ea;
+    color: #2b241b;
+    cursor: pointer;
+  }
+  input[type=file]::file-selector-button { margin-right: .6rem; }
+  input[type=file]::file-selector-button:hover, button.btn:hover { background: #efe7d8; }
+  input[type=number] { width: 5.5rem; cursor: text; background: #fff; }
+  input[type=file] { font-size: .85rem; color: #6e685d; max-width: 100%; }
+
+  #result { margin-top: 1rem; }
+  #result:empty { display: none; }
+  #result img { max-width: 100%; border: 1px solid #d8c8af; border-radius: 6px; display: block; }
+  #result .meta { font-size: .85rem; color: #6e685d; margin-top: .5rem; }
+  #result a { color: #2b241b; }
+
+  pre {
+    position: relative;
+    font-family: ui-monospace, Menlo, monospace;
+    background: #2b241b;
+    color: #efe7d8;
+    padding: .6rem .75rem;
+    border-radius: 6px;
+    font-size: .78rem;
+    overflow-x: auto;
+    margin: .5rem 0;
+  }
+  pre code { font: inherit; }
+  .copy-btn {
+    position: absolute;
+    top: .4rem;
+    right: .4rem;
+    font: inherit;
+    font-size: .7rem;
+    padding: .15rem .5rem;
+    border: 1px solid #6e685d;
+    border-radius: 4px;
+    background: #2b241b;
+    color: #efe7d8;
+    cursor: pointer;
+  }
+  .copy-btn:hover { background: #463c2e; }
+
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: left; padding: .35rem .5rem; border-bottom: 1px solid #d8c8af; vertical-align: top; }
+  th { color: #8c7b62; font-weight: 600; }
+  td code, p code, li code {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: .85em;
+    background: #efdbbd;
+    padding: .05rem .3rem;
+    border-radius: 4px;
+  }
+  footer { margin: 2rem 0 1rem; color: #8c7b62; font-size: .85rem; }
+  footer a { color: #2b241b; }
+</style>
+</head>
+<body>
+  <header>
+    <h1 class="page-title">quickcrop</h1>
+    <p class="tagline">Crop an image before upload. One function, no dependencies, returns a Blob.</p>
+    <p class="bio">Pick a file, drag the crop box, confirm. You get back a <code>Blob</code> sized for upload
+      plus a <code>dataURL</code> for instant previews. It uses your modal system
+      (<a href="https://www.npmjs.com/package/hyperclayjs">themodal</a> or any custom adapter) or brings its own.</p>
+  </header>
+
+  <section class="card">
+    <h2>Try it</h2>
+    <div class="controls">
+      <input type="file" id="file" accept="image/*">
+      <label>aspect
+        <select id="aspect">
+          <option value="">free</option>
+          <option value="1">1 : 1</option>
+          <option value="1.77778">16 : 9</option>
+          <option value="1.33333">4 : 3</option>
+          <option value="0.75">3 : 4</option>
+          <option value="2.5">2.5 : 1 (banner)</option>
+        </select>
+      </label>
+      <label>output
+        <select id="type">
+          <option value="">auto</option>
+          <option value="image/png">png</option>
+          <option value="image/jpeg">jpeg</option>
+          <option value="image/webp">webp</option>
+        </select>
+      </label>
+      <label>max width
+        <input type="number" id="max-width" placeholder="none" min="1">
+      </label>
+    </div>
+    <div id="result"></div>
+  </section>
+
+  <section class="card">
+    <h2>With themodal</h2>
+    <p class="hint" style="margin-top:0">The same cropper hosted by
+      <a href="https://cdn.jsdelivr.net/npm/hyperclayjs@latest/src/ui/theModal.js">themodal</a> from hyperclayjs.
+      With <code>modal: 'auto'</code> (the default) this happens by itself on any page where
+      <code>window.themodal</code> exists; here it is passed explicitly.</p>
+    <div class="controls">
+      <input type="file" id="themodal-file" accept="image/*">
+    </div>
+    <pre><code>const { default: themodal } = await import(
+  'https://cdn.jsdelivr.net/npm/hyperclayjs@latest/src/ui/theModal.js'
+);
+const result = await quickcrop(file, { modal: themodal });</code></pre>
+  </section>
+
+  <section class="card">
+    <h2>Install</h2>
+    <p class="hint" style="margin-top:0">Served straight from npm by jsDelivr. The <code>@1</code> pin tracks 1.x releases. The script injects its own styles; link the stylesheet only if you want to theme via CSS.</p>
+    <pre><code>&lt;script type="module"&gt;
+  import quickcrop from 'https://cdn.jsdelivr.net/npm/quickcrop@1/quickcrop.js';
+&lt;/script&gt;</code></pre>
+    <pre><code>npm install quickcrop</code></pre>
+  </section>
+
+  <section class="card">
+    <h2>Usage</h2>
+    <pre><code>const result = await quickcrop(file, { aspect: 1, maxWidth: 512 });
+if (result) {
+  // result.blob, result.dataURL, result.width, result.height
+  const form = new FormData();
+  form.append('avatar', result.blob, 'avatar.jpg');
+  await fetch('/upload', { method: 'POST', body: form });
+}
+// result is null when the user cancels</code></pre>
+  </section>
+
+  <section class="card">
+    <h2>Options</h2>
+    <table>
+      <tr><th>option</th><th>default</th><th>meaning</th></tr>
+      <tr><td><code>aspect</code></td><td><code>null</code></td><td>width / height lock; <code>null</code> = free crop</td></tr>
+      <tr><td><code>type</code></td><td>smart</td><td>output mime; keeps the input type for jpeg/png/webp, else png</td></tr>
+      <tr><td><code>quality</code></td><td><code>0.92</code></td><td>encoder quality for jpeg/webp</td></tr>
+      <tr><td><code>maxWidth</code></td><td><code>null</code></td><td>cap output width in px, downscales proportionally</td></tr>
+      <tr><td><code>maxHeight</code></td><td><code>null</code></td><td>cap output height; with <code>maxWidth</code>, stricter wins</td></tr>
+      <tr><td><code>minSize</code></td><td><code>40</code></td><td>minimum crop box edge in display px</td></tr>
+      <tr><td><code>labels</code></td><td><code>{ confirm: 'Crop' }</code></td><td>confirm button text</td></tr>
+      <tr><td><code>modal</code></td><td><code>'auto'</code></td><td><code>'auto'</code> | <code>'builtin'</code> | themodal instance | custom adapter</td></tr>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>Bring your own modal</h2>
+    <p class="hint" style="margin-top:0">An adapter normalizes any modal system to one function. quickcrop hands you the live crop stage; you place it, wire two callbacks, and return a <code>close()</code>.</p>
+    <pre><code>const myAdapter = {
+  open({ content, confirmLabel, onConfirm, onCancel }) {
+    const dialog = document.createElement('dialog');
+    dialog.append(content); // the live crop stage
+    // ...your confirm button wired to onConfirm, dismissal to onCancel...
+    document.body.append(dialog);
+    dialog.showModal();
+    return { close() { dialog.close(); dialog.remove(); } };
+  },
+  fit() { return { width: innerWidth * .8, height: innerHeight * .7 }; }
+};
+
+await quickcrop(file, { modal: myAdapter });</code></pre>
+  </section>
+
+  <section class="card">
+    <h2>Theming</h2>
+    <p class="hint" style="margin-top:0">The default look is the warm "pixel quiet" palette. Override the <code>--qc-*</code> variables to retheme:</p>
+    <pre><code>:root {
+  --qc-surface: #17191d;   /* modal + button background */
+  --qc-border: #2a2e35;    /* borders */
+  --qc-text: #e7e9ee;      /* text + primary button background */
+  --qc-on-dark: #0f1012;   /* text on the primary button */
+}</code></pre>
+    <p class="hint">All variables: <code>--qc-surface</code>, <code>--qc-surface-hover</code>, <code>--qc-border</code>, <code>--qc-text</code>, <code>--qc-text-hover</code>, <code>--qc-on-dark</code>, <code>--qc-overlay</code>, <code>--qc-dim</code>, <code>--qc-radius</code>, <code>--qc-crop-line</code>, <code>--qc-font</code>.</p>
+  </section>
+
+  <footer>
+    MIT · <a href="https://github.com/panphora/quickcrop">GitHub</a> · <a href="https://www.npmjs.com/package/quickcrop">npm</a>
+  </footer>
+
+<script type="module">
+import quickcrop from './quickcrop.js';
+
+const $ = s => document.querySelector(s);
+
+function showResult(file, result) {
+  const out = $('#result');
+  out.innerHTML = '';
+  if (!result) return;
+  const img = document.createElement('img');
+  img.src = result.dataURL;
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  const ext = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' }[result.blob.type] || 'png';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(result.blob);
+  a.download = 'crop.' + ext;
+  a.textContent = 'Download';
+  meta.append(
+    `${result.width} × ${result.height} ${result.blob.type.replace('image/', '')} · ` +
+    `${(file.size / 1024).toFixed(0)} KB in → ${(result.blob.size / 1024).toFixed(0)} KB out · `,
+    a
+  );
+  out.append(img, meta);
+}
+
+$('#file').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = ''; // allow re-selecting the same file
+  const result = await quickcrop(file, {
+    aspect: parseFloat($('#aspect').value) || null,
+    type: $('#type').value || undefined,
+    maxWidth: parseInt($('#max-width').value, 10) || null,
+    modal: 'builtin',
+  });
+  showResult(file, result);
+});
+
+$('#themodal-file').addEventListener('change', async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = '';
+  const { default: themodal } = await import('https://cdn.jsdelivr.net/npm/hyperclayjs@latest/src/ui/theModal.js');
+  const result = await quickcrop(file, {
+    aspect: parseFloat($('#aspect').value) || null,
+    modal: themodal,
+  });
+  showResult(file, result);
+});
+
+for (const pre of document.querySelectorAll('pre')) {
+  const btn = document.createElement('button');
+  btn.className = 'copy-btn';
+  btn.type = 'button';
+  btn.textContent = 'copy';
+  btn.onclick = async () => {
+    await navigator.clipboard.writeText(pre.querySelector('code').innerText);
+    btn.textContent = 'copied';
+    setTimeout(() => { btn.textContent = 'copy'; }, 1200);
+  };
+  pre.append(btn);
+}
+</script>
+</body>
+</html>

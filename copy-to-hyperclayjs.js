@@ -26,7 +26,14 @@ if (!window.__hyperclayNoAutoExport) {
 let js = fs.readFileSync(src, 'utf8');
 const pattern = /\/\/ __QC_EXPORT_START__[\s\S]*?\/\/ __QC_EXPORT_END__/;
 if (!pattern.test(js)) throw new Error('copy-to-hyperclayjs: export markers not found in quickcrop.js');
-js = js.replace(pattern, FOOTER);
+const expected = js.replace(pattern, FOOTER);
 
-fs.writeFileSync(dest, js);
+// `--check` exits non-zero when the vendored copy is missing or stale, so
+// tooling (hypersave) can verify the copy is in sync without writing anything.
+if (process.argv.includes('--check')) {
+  if (!fs.existsSync(dest)) process.exit(1);
+  process.exit(fs.readFileSync(dest, 'utf8') === expected ? 0 : 1);
+}
+
+fs.writeFileSync(dest, expected);
 console.log('copied quickcrop.js -> ' + path.relative(path.join(dir, '..'), dest));

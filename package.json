@@ -18,7 +18,9 @@
     "build": "node build.js",
     "prepublishOnly": "node build.js",
     "test": "playwright test",
-    "copy-to-hyperclayjs": "node copy-to-hyperclayjs.js"
+    "copy-to-hyperclayjs": "node scripts/propagate.js --only hyperclayjs",
+    "copy-to-clayjs": "node scripts/propagate.js --only clayjs",
+    "propagate": "node scripts/propagate.js"
   },
   "keywords": [
     "crop",

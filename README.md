@@ -166,4 +166,4 @@ npm publish     # publishes quickcrop.js + quickcrop.css (runs build automatical
 
 ## License
 
-MIT
+MIT-0 (MIT No Attribution).

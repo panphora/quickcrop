@@ -33,7 +33,7 @@
     "lightweight"
   ],
   "author": "David Miranda",
-  "license": "MIT",
+  "license": "MIT-0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/panphora/quickcrop.git"

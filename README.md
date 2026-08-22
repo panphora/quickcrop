@@ -25,7 +25,7 @@ The script injects its own styles. To theme via CSS instead, link the stylesheet
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quickcrop@1/quickcrop.css">
 ```
 
-Those URLs are served straight from npm by jsDelivr, no setup. The `@1` pin tracks the latest 1.x release, so you get patches and minor updates but never a breaking major. Pin exactly with `quickcrop@1.0.0` to freeze a version, or drop the pin (`.../npm/quickcrop/quickcrop.js`) to ride the newest major. The same files are on unpkg too: `https://unpkg.com/quickcrop@1/quickcrop.js`.
+Those URLs are served straight from npm by jsDelivr, no setup. The `@1` pin tracks the latest 1.x release, so you get patches and minor updates but never a breaking major. Pin exactly with `quickcrop@1.1.0` to freeze a version, or drop the pin (`.../npm/quickcrop/quickcrop.js`) to ride the newest major. The same files are on unpkg too: `https://unpkg.com/quickcrop@1/quickcrop.js`.
 
 ### npm (bundlers)
 

@@ -18,7 +18,7 @@ With the CSS file (themeable):
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/quickcrop@1/quickcrop.css">
 ```
 
-Pin a version with `quickcrop@1.0.0` in either URL. Also on unpkg: `https://unpkg.com/quickcrop@1/quickcrop.js`. Via npm: `npm install quickcrop`, then `import quickcrop from 'quickcrop'`.
+Pin a version with `quickcrop@1.1.0` in either URL. Also on unpkg: `https://unpkg.com/quickcrop@1/quickcrop.js`. Via npm: `npm install quickcrop`, then `import quickcrop from 'quickcrop'`.
 
 ## Quick start
 

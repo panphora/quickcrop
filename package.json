@@ -1,6 +1,6 @@
 {
   "name": "quickcrop",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Image-crop modal for upload flows. One function, no dependencies, returns a Blob. Uses your modal system or brings its own.",
   "type": "module",
   "main": "quickcrop.js",

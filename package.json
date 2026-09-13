@@ -10,6 +10,7 @@
     "./quickcrop.css": "./quickcrop.css"
   },
   "files": [
+    "packed-contract.json",
     "quickcrop.js",
     "quickcrop.css"
   ],

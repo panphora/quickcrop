@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1] - 2026-10-03
+
+### Changed
+- Crop geometry is now written as inline `!important` styles so it can't be overridden
+
+
+
 ## [1.2.0] - 2026-09-19
 
 ### Added
